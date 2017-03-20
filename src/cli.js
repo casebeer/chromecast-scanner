@@ -6,7 +6,7 @@ var pattern = process.argv.length >= 3 ? new RegExp(process.argv[2]) : /.*/;
 
 scanner(
   { filter: function (device) { return device.friendly_name.match(pattern); } },
-  function(err, _, device) {
+  function(err, device) {
     if (err) return console.log(err.message);
     //console.log(device);
     console.log('mDNS: %s "%s" %s\n\trunning on %s:%s (%s)',

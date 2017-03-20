@@ -44,14 +44,14 @@ module.exports = function(opts, cb) {
     mdnsCache.add(answer);
   };
 
-  var returnDevices = function (devices, response) {
+  var returnDevices = function (devices) {
     var device, i;
     for (i = 0; devices && i < devices.length; i++) {
       device = devices[i];
       // return each valid device once only
       if (device && !returnedDevices[device.name]) {
-        // NB API change – passing friendly name and full CC details here, not A record and raw Response
-        cb(null, xtend(device.a, { name:device.friendly_name, device:device }), response);
+        // NB API change passing device object not DNS A and Response objects
+        cb(null, device);
         returnedDevices[device.name] = true;
       }
     }
@@ -59,16 +59,16 @@ module.exports = function(opts, cb) {
 
   // If we have enough mDNS data gathered to fulfill the caller's
   // request, respond via the callback funciton.
-  var handleCallback = function (response) {
+  var handleCallback = function () {
     if (typeof opts.filter === 'function') {
       // filter discoverd chromecasts with the provided function
-      returnDevices(chromecasts.filter(opts.filter), response);
+      returnDevices(chromecasts.filter(opts.filter));
     } else if (opts.name) {
       // search the discovered chromecasts for specified friendly name
-      returnDevices([chromecasts.named(opts.name)], response);
+      returnDevices([chromecasts.named(opts.name)]);
     } else {
       // return any and all chromecasts that have IPs
-      returnDevices(chromecasts.reachable(), response);
+      returnDevices(chromecasts.reachable());
     }
   };
 
@@ -140,7 +140,7 @@ module.exports = function(opts, cb) {
 
     // check to see if we have enough data to fulfill request each 
     // time we finish processing a new incoming mDNS packet
-    handleCallback(response);
+    handleCallback();
   };
 
   m.on('response', onResponse);
